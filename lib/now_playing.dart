@@ -20,14 +20,16 @@ class NowPlayingWidget extends StatefulWidget {
 class _NowPlayingState extends State<NowPlayingWidget> {
   String twoDigits(int n) => n.toString().padLeft(2, "0");
 
-  Duration position = Duration.zero;
-
   @override
   void initState() {
+    Track track = widget.track;
     super.initState();
     Track.player.positionStream.listen((event) {
       Duration temp = event as Duration;
-      position = temp;
+      track.position = temp;
+      if (track.position == track.duration) {
+        track.playing = false;
+      }
       setState(() {});
     });
   }
@@ -42,7 +44,7 @@ class _NowPlayingState extends State<NowPlayingWidget> {
     return Column(
       children: [
         LinearPercentIndicator(
-          percent: position.inSeconds / track.duration.inSeconds,
+          percent: track.position.inSeconds / track.duration.inSeconds,
           width: width,
           lineHeight: 12,
           animation: true,
@@ -62,7 +64,7 @@ class _NowPlayingState extends State<NowPlayingWidget> {
             Text(track.name),
             const Spacer(),
             Text(
-                "${twoDigits(position.inMinutes.remainder(60).abs())}:${twoDigits(position.inSeconds.remainder(60).abs())}\n$mins:$secs"),
+                "${twoDigits(track.position.inMinutes.remainder(60).abs())}:${twoDigits(track.position.inSeconds.remainder(60).abs())}\n$mins:$secs"),
             IconButton(
                 onPressed: () {
                   setState(() {

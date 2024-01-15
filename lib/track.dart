@@ -13,14 +13,20 @@ class Track {
   static final player = AudioPlayer();
 
   Duration duration;
+  Duration position = Duration.zero;
   bool playing = false;
   String name;
   String netUrl;
   String? localUrl;
 
   void playPause() async {
-    playing = !playing;
-    playing ? await player.play() : await player.pause();
+    if (duration == position) {
+      playing = !playing;
+      playing ? await player.play() : await player.pause();
+    } else {
+      player.seek(Duration.zero);
+      player.play();
+    }
   }
 
   void stop() async {
