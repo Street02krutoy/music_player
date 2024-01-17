@@ -12,6 +12,8 @@ class Track {
 
   static final player = AudioPlayer();
 
+  static bool playerOpened = false;
+
   Duration duration;
   Duration position = Duration.zero;
   bool playing = false;

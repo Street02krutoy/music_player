@@ -6,8 +6,13 @@ import 'dart:developer' as dev;
 import 'package:we_slide/we_slide.dart';
 
 class NowPlayingWidget extends StatefulWidget {
-  const NowPlayingWidget(
-      {super.key, required this.track, required this.controller});
+  final Function() notifyParent;
+  const NowPlayingWidget({
+    super.key,
+    required this.track,
+    required this.controller,
+    required this.notifyParent,
+  });
 
   final Track track;
 
@@ -37,6 +42,7 @@ class _NowPlayingState extends State<NowPlayingWidget> {
   @override
   Widget build(BuildContext context) {
     Track track = widget.track;
+
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     var mins = twoDigits(track.duration.inMinutes.remainder(60).abs());
@@ -55,7 +61,10 @@ class _NowPlayingState extends State<NowPlayingWidget> {
         Row(
           children: [
             IconButton(
-              onPressed: () => widget.controller.show(),
+              onPressed: () {
+                widget.controller.show();
+                widget.notifyParent();
+              },
               icon: Icon(
                 Icons.arrow_drop_up,
                 size: width * 0.15,
