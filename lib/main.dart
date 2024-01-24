@@ -44,35 +44,28 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<String> fetchTracks() async {
     print("any");
-    const uri = 'http://192.168.0.106:3000';
+    const uri = 'http://192.168.0.106:8080';
     return http.get(
-      Uri.parse(uri),
+      Uri.parse(uri + "/get"),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
     ).then((value) {
       dev.log(value.body);
-      List names = List.from(jsonDecode(value.body));
+      List fetchedTracks = List.from(jsonDecode(value.body));
       List<Track> trks = List.empty(growable: true);
-      for (var i = 0; i < names.length; i++) {
-        print(names[i]);
+      if (fetchedTracks.length == 0) return "1";
+      for (var i = 0; i < fetchedTracks.length; i++) {
+        print(fetchedTracks[i]);
         trks.add(Track(
-            name: names[i]["name"],
-            duration:
-                Duration(seconds: (names[i]["duration"] as double).toInt()),
-            netUrl: "$uri/tracks/$i.mp3"));
+            name: fetchedTracks[i]["name"],
+            duration: Duration(seconds: fetchedTracks[i]["duration"]),
+            netUrl: "$uri${fetchedTracks[i]["url"]}"));
+        print("$uri${fetchedTracks[i]["url"]}");
       }
       tracks = trks;
       return "0";
-    }).catchError(() => "1");
-    // tracks = List.filled(
-    //     1,
-    //     Track(
-    //         netUrl: "https://www.myinstants.com/media/sounds/ba-dum.mp3",
-    //         name: "бадабуспссс саунд"));
-    // return Future(
-    //   () => "0",
-    // );
+    });
   }
 
   Future<String> _future = Future(
@@ -171,7 +164,9 @@ class _MyHomePageState extends State<MyHomePage> {
                             setState(() {});
                           },
                         )
-                      : const NoTrackWidget(name: "Network error");
+                      : snapshot.data == "1"
+                          ? const NoTrackWidget(name: "No tracks")
+                          : const NoTrackWidget(name: "Network error");
                 }),
           )),
     );

@@ -22,13 +22,14 @@ class Track {
   String? localUrl;
 
   void playPause() async {
-    if (duration == position) {
-      playing = !playing;
-      playing ? await player.play() : await player.pause();
-    } else {
-      player.seek(Duration.zero);
-      player.play();
-    }
+    playing = !playing;
+    playing ? await player.play() : await player.pause();
+    // if (duration == position) {
+
+    // } else {
+    //   player.seek(Duration.zero);
+    //   player.play();
+    // }
   }
 
   void stop() async {
