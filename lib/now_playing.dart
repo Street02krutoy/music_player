@@ -10,13 +10,10 @@ class NowPlayingWidget extends StatefulWidget {
   const NowPlayingWidget({
     super.key,
     required this.track,
-    required this.controller,
     required this.notifyParent,
   });
 
   final Track track;
-
-  final WeSlideController controller;
 
   @override
   State<StatefulWidget> createState() => _NowPlayingState();
@@ -61,12 +58,9 @@ class _NowPlayingState extends State<NowPlayingWidget> {
         Row(
           children: [
             IconButton(
-              onPressed: () {
-                widget.controller.show();
-                widget.notifyParent();
-              },
+              onPressed: () {},
               icon: Icon(
-                Icons.arrow_drop_up,
+                Icons.music_note,
                 size: width * 0.15,
               ),
             ),

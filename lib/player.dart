@@ -5,6 +5,7 @@ import 'dart:developer' as dev;
 
 import 'package:we_slide/we_slide.dart';
 
+
 class PlayerWidget extends StatefulWidget {
   const PlayerWidget(
       {super.key,
