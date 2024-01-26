@@ -47,7 +47,7 @@ class PlayingComponents {
 
   Future<void> refresh() async {
     fetchTracks();
-    setState();
+    setState(() {});
   }
 
   Widget nowPlaying() {
