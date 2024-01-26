@@ -1,17 +1,13 @@
-import 'dart:io';
-
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:music_player/config.dart';
 import 'package:music_player/no_track_widget.dart';
 import 'package:music_player/now_playing.dart';
-import 'package:music_player/player.dart';
 import 'package:music_player/track.dart';
 import 'package:music_player/track_widget.dart';
 import 'package:http/http.dart' as http;
+import 'package:music_player/utils/upload.dart';
 import 'dart:convert';
 import 'dart:developer' as dev;
-
-import 'package:we_slide/we_slide.dart';
 
 void main() {
   runApp(const MyApp());
@@ -45,12 +41,9 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<Track> tracks = List.empty();
 
-  final uri = 'http://192.168.0.106:8080';
-
   Future<String> fetchTracks() async {
-    print("any");
     return http.get(
-      Uri.parse(uri + "/get"),
+      Uri.parse("${Config.URL}/get"),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
@@ -63,107 +56,11 @@ class _MyHomePageState extends State<MyHomePage> {
         trks.add(Track(
             name: fetchedTracks[i]["name"],
             duration: Duration(seconds: fetchedTracks[i]["duration"]),
-            netUrl: "$uri${fetchedTracks[i]["url"]}"));
+            netUrl: "${Config.URL}${fetchedTracks[i]["url"]}"));
       }
       tracks = trks;
       return "0";
     });
-  }
-
-  final TextEditingController _controller = TextEditingController();
-
-  late File track;
-
-  Future<void> _showUploadDialog() async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Upload a file'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                TextButton(
-                  child: const Text('Select'),
-                  onPressed: () async {
-                    FilePickerResult? result =
-                        await FilePicker.platform.pickFiles();
-
-                    if (result != null) {
-                      if (result.count == 1 &&
-                          result.names[0]!.endsWith(".mp3")) {
-                        track = File(result.files.single.path!);
-
-                        return;
-                      }
-                      Navigator.of(context).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text('File is not ends with .mp3'),
-                      ));
-                      return;
-                    } else {
-                      Navigator.of(context).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text('File hasn`t choosen'),
-                      ));
-                    }
-                  },
-                ),
-                TextField(
-                  controller: _controller,
-                  decoration: InputDecoration(
-                      border: OutlineInputBorder(), labelText: "track name"),
-                )
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () async {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('Upload'),
-              onPressed: () async {
-                var request =
-                    http.MultipartRequest("POST", Uri.parse('$uri/upload'));
-                //request.fields['name'] = _controller.text;
-                request.files
-                    .add(await http.MultipartFile.fromPath("file", track.path));
-                print(track.path);
-
-                var response =
-                    await http.Response.fromStream(await request.send());
-                if (response.statusCode == 200) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    content: Text('Uploaded!'),
-                  ));
-
-                  print("$uri/update/${jsonDecode(response.body)["id"]}");
-
-                  http.put(
-                      Uri.parse(
-                        "$uri/update/${jsonDecode(response.body)["id"]}",
-                      ),
-                      body: '{"name":"${_controller.text}"}',
-                      headers: {
-                        "Content-Type": "application/json"
-                      }).then((value) => print(value.statusCode));
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('${response.statusCode} ne Uploaded!'),
-                  ));
-                }
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
   Future<String> _future = Future(
@@ -172,7 +69,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _future = fetchTracks();
   }
@@ -183,19 +79,23 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     final colorTheme = Theme.of(context).colorScheme;
 
+    UploadTrackService uploadTrackService = UploadTrackService(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('AppBar Demo'),
         backgroundColor: colorTheme.inversePrimary,
         shadowColor: colorTheme.shadow,
         actions: [
-          TextButton(onPressed: _showUploadDialog, child: Text("Upload")),
+          TextButton(
+              onPressed: () => uploadTrackService.showUploadDialog(context),
+              child: const Text("Upload")),
           TextButton(
               onPressed: () {
                 fetchTracks();
                 setState(() {});
               },
-              child: Text("Reload"))
+              child: const Text("Reload"))
         ],
       ),
       body: Column(
@@ -205,10 +105,9 @@ class _MyHomePageState extends State<MyHomePage> {
             child: FutureBuilder<String>(
               future: _future, // a previously-obtained Future<String> or null
               builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-                List<Widget> children;
                 return snapshot.data == "0"
                     ? tracks.isEmpty
-                        ? Text("")
+                        ? const Text("")
                         : ListView.builder(
                             scrollDirection: Axis.vertical,
                             shrinkWrap: true,
@@ -234,7 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         onPressed: () {
                           fetchTracks();
                         },
-                        child: Text("Refresh"));
+                        child: const Text("Refresh"));
               },
             ),
           ),
