@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:music_player/track.dart';
 import 'package:percent_indicator/percent_indicator.dart';
-import 'dart:developer' as dev;
 
 class NoTrackWidget extends StatelessWidget {
   const NoTrackWidget({super.key, required this.name});
