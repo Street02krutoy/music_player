@@ -35,6 +35,12 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    uploadTrackService = UploadTrackService(context);
+    playingComponents = PlayingComponents((Function fun) {
+      setState(() {
+        fun();
+      });
+    });
   }
 
   int playing = 0;
@@ -44,12 +50,6 @@ class _MyHomePageState extends State<MyHomePage> {
   late PlayingComponents playingComponents;
   @override
   Widget build(BuildContext context) {
-    uploadTrackService = UploadTrackService(context);
-    playingComponents = PlayingComponents((Function fun) {
-      setState(() {
-        fun();
-      });
-    });
     final colorTheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
