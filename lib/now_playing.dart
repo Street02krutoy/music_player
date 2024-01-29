@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:music_player/track.dart';
 import 'package:percent_indicator/percent_indicator.dart';
+import 'dart:developer' as dev;
+
+import 'package:we_slide/we_slide.dart';
 
 class NowPlayingWidget extends StatefulWidget {
   final Function() notifyParent;

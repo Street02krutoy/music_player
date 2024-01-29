@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:music_player/track.dart';
+import 'package:percent_indicator/percent_indicator.dart';
+import 'dart:developer' as dev;
 
 class TrackWidget extends StatefulWidget {
   const TrackWidget({super.key, required this.track});
@@ -25,7 +27,7 @@ class _TrackWidgetState extends State<TrackWidget> {
           size: width * 0.15,
         ),
         Text(track.name),
-        const Spacer(),
+        Spacer(),
         Text(
             "${twoDigits(track.duration.inMinutes.remainder(60).abs()).toString()}:${twoDigits(track.duration.inSeconds.remainder(60).abs()).toString()}"),
       ],

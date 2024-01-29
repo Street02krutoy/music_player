@@ -48,7 +48,6 @@ class UploadTrackService {
   }
 
   Future<void> _uploadFile() async {
-    //TODO extract this shit
     var req = http.MultipartRequest("POST", Uri.parse('${Config.URL}/upload'));
     req.files.add(await http.MultipartFile.fromPath("file", track.path));
 
@@ -72,7 +71,7 @@ class UploadTrackService {
     _closeDialog("");
   }
 
-  Future<void> showUploadDialog() async {
+  Future<void> showUploadDialog(BuildContext context) async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // user must tap button!
