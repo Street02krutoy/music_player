@@ -95,8 +95,8 @@ class UploadTrackService {
           ),
           actions: <Widget>[
             TextButton(
+              onPressed: _navigator.pop,
               child: const Text('Cancel'),
-              onPressed: () => _cancelUpload,
             ),
             TextButton(
               onPressed: _uploadFile,

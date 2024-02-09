@@ -36,6 +36,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  int _selectedIndex = 0;
+
   @override
   void initState() {
     super.initState();
@@ -53,60 +55,95 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AppBar Demo'),
+        title: Text(widget.title),
         backgroundColor: colorTheme.inversePrimary,
         shadowColor: colorTheme.shadow,
         actions: [
           TextButton(
-              onPressed: () => _uploadTrackService.showUploadDialog(context),
+              onPressed: () =>
+                  _uploadTrackService.showUploadDialog(context).then((value) {
+                    _fetchTrackService.refresh();
+                    setState(() {});
+                  }),
               child: const Text("Upload")),
           TextButton(
               onPressed: () {
                 _fetchTrackService.refresh();
+                ScaffoldMessenger.of(context).showMaterialBanner(
+                    MaterialBanner(content: const Text("Refreshed"), actions: [
+                  TextButton(
+                      onPressed:
+                          ScaffoldMessenger.of(context).clearMaterialBanners,
+                      child: const Text("Ok"))
+                ]));
                 setState(() {});
               },
               child: const Text("Reload"))
         ],
       ),
-      body: Column(
-        children: [
-          Container(
-            color: Colors.white,
-            child: FutureBuilder<String>(
-              future: _fetchTrackService
-                  .future, // a previously-obtained Future<String> or null
-              builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-                switch (snapshot.data) {
-                  case "0":
-                    return ListView.builder(
-                      scrollDirection: Axis.vertical,
-                      shrinkWrap: true,
-                      itemCount: _fetchTrackService.tracks.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                _fetchTrackService.playing = index;
-                                _fetchTrackService
-                                    .tracks[_fetchTrackService.playing]
-                                    .play();
-                              });
-                              String trk = _fetchTrackService
-                                  .tracks[_fetchTrackService.playing].name;
-
-                              dev.log("$trk ${_fetchTrackService.playing}",
-                                  name: "Now playing");
-                            },
-                            child: TrackWidget(
-                              track: _fetchTrackService.tracks[index],
-                            ));
-                      },
-                    );
-                  default:
-                    return const Text("");
-                }
+      drawer: Drawer(
+        child: ListView(
+          // Important: Remove any padding from the ListView.
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: const BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text(widget.title),
+            ),
+            ListTile(
+              title: const Row(
+                children: [
+                  Icon(Icons.music_note),
+                  Text(' Current track'),
+                ],
+              ),
+              selected: _selectedIndex == 1,
+              onTap: () {
+                // Update the state of the app
+                _onItemTapped(1);
+                // Then close the drawer
+                Navigator.pop(context);
               },
             ),
+            ListTile(
+              title: const Row(
+                children: [
+                  Icon(Icons.queue_music),
+                  Text(' Current queue'),
+                ],
+              ),
+              selected: _selectedIndex == 0,
+              onTap: () {
+                // Update the state of the app
+                _onItemTapped(0);
+                // Then close the drawer
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: const Row(
+                children: [
+                  Icon(Icons.playlist_play),
+                  Text('Playlists'),
+                ],
+              ),
+              selected: _selectedIndex == 2,
+              onTap: () {
+                // Update the state of the app
+                _onItemTapped(2);
+                // Then close the drawer
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
+      body: Column(
+        children: [
+          TrackListWidget(
+            fetchTrackService: _fetchTrackService,
           ),
           const Spacer(),
           FutureBuilder<String>(
@@ -123,9 +160,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         },
                       );
                     }
-                    return const NoTrackWidget(name: "No tracks");
+                    return const NoTrackWidget(
+                        name: "No tracks (server lejit)");
                   case "1":
-                    return const NoTrackWidget(name: "Error: No tracks");
+                    return const NoTrackWidget(name: "No tracks");
                   case "2":
                     return const NoTrackWidget(name: "Network error");
                   default:
@@ -134,6 +172,59 @@ class _MyHomePageState extends State<MyHomePage> {
               })
         ],
       ),
+    );
+  }
+
+  void _onItemTapped(int i) {
+    setState(() {
+      _selectedIndex = i;
+    });
+  }
+}
+
+class TrackListWidget extends StatefulWidget {
+  const TrackListWidget({super.key, required this.fetchTrackService});
+
+  final FetchTrackService fetchTrackService;
+
+  @override
+  State<TrackListWidget> createState() => _TrackListWidgetState();
+}
+
+class _TrackListWidgetState extends State<TrackListWidget> {
+  @override
+  Widget build(BuildContext context) {
+    FetchTrackService service = widget.fetchTrackService;
+
+    return FutureBuilder<String>(
+      future: service.future, // a previously-obtained Future<String> or null
+      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+        switch (snapshot.data) {
+          case "0":
+            return ListView.builder(
+              scrollDirection: Axis.vertical,
+              shrinkWrap: true,
+              itemCount: service.tracks.length,
+              itemBuilder: (BuildContext context, int index) {
+                return ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        service.playing = index;
+                        service.tracks[service.playing].play();
+                      });
+                      String trk = service.tracks[service.playing].name;
+
+                      dev.log("$trk ${service.playing}", name: "Now playing");
+                    },
+                    child: TrackWidget(
+                      track: service.tracks[index],
+                    ));
+              },
+            );
+          default:
+            return const Text("");
+        }
+      },
     );
   }
 }
