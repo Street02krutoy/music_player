@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:music_player/no_track_widget.dart';
-import 'package:music_player/now_playing.dart';
-import 'package:music_player/track_widget.dart';
+import 'package:music_player/pages/tracklist.dart';
 import 'package:music_player/utils/api/fetch.dart';
 import 'package:music_player/utils/api/upload.dart';
-import 'dart:developer' as dev;
 
 void main() {
   runApp(const MyApp());
@@ -37,10 +34,12 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
+  late final TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
     _fetchTrackService = FetchTrackService();
   }
 
@@ -58,6 +57,23 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
         backgroundColor: colorTheme.inversePrimary,
         shadowColor: colorTheme.shadow,
+        bottom: TabBar(
+          controller: TabController(length: 3, vsync: this),
+          tabs: <Widget>[
+            Tab(
+              icon: Icon(Icons.cloud_outlined),
+              text: "All tracks",
+            ),
+            Tab(
+              icon: Icon(Icons.beach_access_sharp),
+              text: "Playlists",
+            ),
+            Tab(
+              icon: Icon(Icons.brightness_5_sharp),
+              text: "Queue",
+            ),
+          ],
+        ),
         actions: [
           TextButton(
               onPressed: () =>
@@ -140,38 +156,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      body: Column(
-        children: [
-          TrackListWidget(
-            fetchTrackService: _fetchTrackService,
-          ),
-          const Spacer(),
-          FutureBuilder<String>(
-              future: _fetchTrackService.future,
-              builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-                switch (snapshot.data) {
-                  case "0":
-                    if (_fetchTrackService.tracks.isNotEmpty) {
-                      return NowPlayingWidget(
-                        track: _fetchTrackService
-                            .tracks[_fetchTrackService.playing],
-                        notifyParent: () {
-                          setState(() {});
-                        },
-                      );
-                    }
-                    return const NoTrackWidget(
-                        name: "No tracks (server lejit)");
-                  case "1":
-                    return const NoTrackWidget(name: "No tracks");
-                  case "2":
-                    return const NoTrackWidget(name: "Network error");
-                  default:
-                    return const NoTrackWidget(name: "Unexpected error");
-                }
-              })
-        ],
-      ),
+      body: TrackListPage(fetchTrackService: _fetchTrackService),
     );
   }
 
@@ -179,52 +164,5 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _selectedIndex = i;
     });
-  }
-}
-
-class TrackListWidget extends StatefulWidget {
-  const TrackListWidget({super.key, required this.fetchTrackService});
-
-  final FetchTrackService fetchTrackService;
-
-  @override
-  State<TrackListWidget> createState() => _TrackListWidgetState();
-}
-
-class _TrackListWidgetState extends State<TrackListWidget> {
-  @override
-  Widget build(BuildContext context) {
-    FetchTrackService service = widget.fetchTrackService;
-
-    return FutureBuilder<String>(
-      future: service.future, // a previously-obtained Future<String> or null
-      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-        switch (snapshot.data) {
-          case "0":
-            return ListView.builder(
-              scrollDirection: Axis.vertical,
-              shrinkWrap: true,
-              itemCount: service.tracks.length,
-              itemBuilder: (BuildContext context, int index) {
-                return ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        service.playing = index;
-                        service.tracks[service.playing].play();
-                      });
-                      String trk = service.tracks[service.playing].name;
-
-                      dev.log("$trk ${service.playing}", name: "Now playing");
-                    },
-                    child: TrackWidget(
-                      track: service.tracks[index],
-                    ));
-              },
-            );
-          default:
-            return const Text("");
-        }
-      },
-    );
   }
 }

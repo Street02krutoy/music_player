@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:music_player/config.dart';
+import 'package:music_player/utils/config.dart';
 
 class UploadTrackService {
   final TextEditingController _textController = TextEditingController();

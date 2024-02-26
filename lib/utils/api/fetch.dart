@@ -1,5 +1,5 @@
 import 'package:http/http.dart' as http;
-import 'package:music_player/config.dart';
+import 'package:music_player/utils/config.dart';
 import 'dart:convert';
 import 'dart:developer' as dev;
 
