@@ -1,0 +1,11 @@
+{
+  "@@locale": "ru",
+    "helloWorld": "Привет, Мир!",
+    "@helloWorld": {
+      "description": "Общее приветствие погористов в мире"
+    },
+    "title" : "Название",
+    "@title":{
+      "description": "Название приложения"
+    }
+  }
